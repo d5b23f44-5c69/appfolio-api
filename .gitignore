@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+data/
+*.egg-info/
+dist/
+build/
+appfolio_api.egg-info/
+app/sites.yaml
+SECRETS.txt

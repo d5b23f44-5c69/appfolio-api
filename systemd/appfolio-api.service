@@ -1,0 +1,24 @@
+[Unit]
+Description=AppFolio Listings API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/appfolio-api
+EnvironmentFile=/etc/appfolio-api.env
+ExecStart=/opt/appfolio-api/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8080
+Restart=on-failure
+RestartSec=5
+User=appfolio
+Group=appfolio
+
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/appfolio-api/data
+
+[Install]
+WantedBy=multi-user.target

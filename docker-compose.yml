@@ -1,0 +1,48 @@
+services:
+  appfolio-api:
+    build: .
+    image: appfolio-api:latest
+    container_name: appfolio-api
+    restart: unless-stopped
+    # NOTE: no `ports:` — the API is only reachable on the internal compose
+    # network. Caddy is the only public entry point.
+    expose:
+      - "8080"
+    environment:
+      APPFOLIO_API_KEY: ${APPFOLIO_API_KEY:?set APPFOLIO_API_KEY in .env}
+      APPFOLIO_DATA_DIR: /data
+    volumes:
+      - appfolio-data:/data
+      # Mount sites.yaml read-only so you can edit it and `docker compose
+      # restart appfolio-api` without rebuilding the image.
+      - ./app/sites.yaml:/app/app/sites.yaml:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8080/healthz').status==200 else 1)"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: appfolio-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      CADDY_DOMAIN: ${CADDY_DOMAIN:-localhost}
+      CADDY_ACME_EMAIL: ${CADDY_ACME_EMAIL:-admin@example.com}
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      appfolio-api:
+        condition: service_healthy
+
+volumes:
+  appfolio-data:
+  caddy-data:
+  caddy-config:

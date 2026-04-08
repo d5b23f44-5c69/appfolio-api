@@ -1,0 +1,24 @@
+# Copy this file to app/sites.yaml and edit for your properties.
+#
+#   cp app/sites.yaml.example app/sites.yaml
+#
+# `app/sites.yaml` is gitignored. The compose file mounts it read-only into
+# the container, so you can edit it and `docker compose restart appfolio-api`
+# without rebuilding the image.
+
+defaults:
+  refresh_minutes: 15
+
+sites:
+  changeme-site-key:
+    # The {subdomain} of https://{subdomain}.appfolio.com
+    subdomain: changeme-appfolio-subdomain
+
+    # The exact "Property List" name as it appears in AppFolio. Used as
+    # `filters[property_list]={name}` to scope a multi-property portfolio
+    # down to a single property. Set to null to scrape the entire portfolio.
+    property_list: "Changeme Property Name"
+
+    # How often the scheduler scrapes this site (minutes). Optional;
+    # defaults to `defaults.refresh_minutes` above.
+    refresh_minutes: 15

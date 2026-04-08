@@ -1,0 +1,23 @@
+[project]
+name = "appfolio-api"
+version = "0.1.0"
+description = "Scrape AppFolio property listings and serve them via an authenticated API."
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.27",
+    "httpx>=0.27",
+    "beautifulsoup4>=4.12",
+    "apscheduler>=3.10",
+    "pyyaml>=6.0",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.setuptools.package-data]
+app = ["sites.yaml", "sites.yaml.example"]

@@ -1,0 +1,39 @@
+# Caddy reverse proxy in front of the FastAPI app.
+#
+# CADDY_DOMAIN controls the site address:
+#   - "localhost"  → plain HTTP on :80, no TLS (local dev)
+#   - any real FQDN → automatic HTTPS via Let's Encrypt on :443
+#
+# Both modes proxy to the internal `appfolio-api:8080` container over the
+# private compose network. The api container is NOT published on the host.
+
+{
+	# Email used for ACME registration when CADDY_DOMAIN is a real FQDN.
+	# Override with CADDY_ACME_EMAIL in .env.
+	email {$CADDY_ACME_EMAIL:admin@example.com}
+	# Drop the admin API; we don't need it inside the container.
+	admin off
+}
+
+{$CADDY_DOMAIN:localhost} {
+	encode zstd gzip
+
+	# Health endpoint should be cheap and never cached.
+	@health path /healthz
+	handle @health {
+		reverse_proxy appfolio-api:8080
+	}
+
+	# Everything else: pass through to FastAPI. The X-API-Key header from
+	# the client (e.g. a Cloudflare Worker) is forwarded as-is.
+	reverse_proxy appfolio-api:8080 {
+		header_up X-Forwarded-Proto {scheme}
+		header_up X-Forwarded-For {remote_host}
+	}
+
+	log {
+		output stdout
+		format console
+		level INFO
+	}
+}
